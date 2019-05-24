@@ -1,7 +1,7 @@
-/*
- *myalsa driver ALSA ASOC CPU-DAI file.
- *made by cuishang.
- */
+ /*
+  *myalsa driver ALSA ASOC CPU-DAI file.
+  *made by cuishang.
+  */
 
 #include <linux/init.h>
 #include <linux/delay.h>
