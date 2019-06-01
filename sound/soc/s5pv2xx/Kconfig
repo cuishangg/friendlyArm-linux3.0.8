@@ -9,22 +9,20 @@ config SND_S5PV2XX_SOC
 config SND_S5PC1XX_I2S
 	tristate
 
-config SND_SOC_WM8960_MINI210
+config SND_MINI210_WM8960
+	tristate
+
+config SND_WM8960
 	tristate
 
 config SND_S5PV2XX_SOC_WM8960
 	tristate "SoC I2S Audio support for WM8960 on MINI210"
 	depends on SND_S5PV2XX_SOC && MACH_MINI210
 	select SND_S5PC1XX_I2S
-	select SND_SOC_WM8960_MINI210
+	select SND_MINI210_WM8960
+	select SND_WM8960
 	help
 	  Say Y if you want to add support for SoC audio on MINI210
 	  with the WM8960.
 
-config S5P_INTERNAL_DMA
-	bool "IIS operate with Internal DMA"
-	depends on SND_S5PV2XX_SOC_WM8960
-	default y
-	help
-	  Say Y for IIS to operate with Internal DMA(IIS's own DMA)
 
