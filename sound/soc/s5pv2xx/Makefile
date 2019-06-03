@@ -1,5 +1,5 @@
 # Samsung Platform Support
-MAKE_MODE = no
+MAKE_MODE = yes
 
 ifeq ($(MAKE_MODE),yes)
 KERN_DIR = /home/cuishang/as/work/friendlyArm-linux3.0.8

@@ -1870,6 +1870,7 @@ static void snd_soc_instantiate_card(struct snd_soc_card *card)
 		mutex_unlock(&card->mutex);
 		return;
 	}
+    printk(KERN_INFO "snd_card_create succesed ! card->name = %s \n", card->name);
 	card->snd_card->dev = card->dev;
 
 	card->dapm.bias_level = SND_SOC_BIAS_OFF;
@@ -3359,6 +3360,7 @@ int snd_soc_register_card(struct snd_soc_card *card)
 {
 	int i;
 
+    printk(KERN_INFO "+ %s \n", __FUNCTION__);
 	if (!card->name || !card->dev)
 		return -EINVAL;
 
@@ -3388,7 +3390,7 @@ int snd_soc_register_card(struct snd_soc_card *card)
 	mutex_unlock(&client_mutex);
 
 	dev_dbg(card->dev, "Registered card '%s'\n", card->name);
-
+    printk(KERN_INFO "- %s Registered card '%s'\n ", __FUNCTION__, card->name);
 	return 0;
 }
 EXPORT_SYMBOL_GPL(snd_soc_register_card);

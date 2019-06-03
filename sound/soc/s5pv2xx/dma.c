@@ -26,6 +26,16 @@
 
 #include "dma.h"
 
+
+#define DEBUG
+    
+#ifdef	DEBUG
+#define	dprintk( argc, argv... )		printk( argc, ##argv )
+#else
+#define	dprintk( argc, argv... )		
+#endif
+
+
 #define PCM_INFO	\
 	( SNDRV_PCM_INFO_INTERLEAVED |	\
 	  SNDRV_PCM_INFO_BLOCK_TRANSFER |	\
@@ -73,23 +83,23 @@ static void dma_enqueue(struct snd_pcm_substream *substream)
 	unsigned int limit;
 	int ret;
 
-	pr_debug("Entered %s\n", __func__);
+	dprintk("Entered %s\n", __func__);
 
 	if (s3c_dma_has_circular())
 		limit = (prtd->dma_end - prtd->dma_start) / prtd->dma_period;
 	else
 		limit = prtd->dma_limit;
 
-	pr_debug("%s: loaded %d, limit %d\n", __func__, prtd->dma_loaded, limit);
+	dprintk("%s: loaded %d, limit %d\n", __func__, prtd->dma_loaded, limit);
 
 	while (prtd->dma_loaded < limit) {
 		unsigned long len = prtd->dma_period;
 
-		pr_debug("dma_loaded: %d\n", prtd->dma_loaded);
+		dprintk("dma_loaded: %d\n", prtd->dma_loaded);
 
 		if ((pos + len) > prtd->dma_end) {
 			len  = prtd->dma_end - pos;
-			pr_debug("%s: corrected dma len %ld\n", __func__, len);
+			dprintk("%s: corrected dma len %ld\n", __func__, len);
 		}
 
 		ret = s3c2410_dma_enqueue(prtd->params->channel,
@@ -114,7 +124,7 @@ static void audio_buffdone(struct s3c2410_dma_chan *channel,
 	struct snd_pcm_substream *substream = dev_id;
 	struct runtime_data *prtd;
 
-	pr_debug("Entered %s\n", __func__);
+	dprintk("Entered %s\n", __func__);
 
 	if (result == S3C2410_RES_ABORT || result == S3C2410_RES_ERR)
 		return;
@@ -144,7 +154,7 @@ static int dma_hw_params(struct snd_pcm_substream *substream,
 		snd_soc_dai_get_dma_data(rtd->cpu_dai, substream);
 	int ret = 0;
 
-	pr_debug("Entered %s\n", __func__);
+	dprintk("Entered %s\n", __func__);
 
 	/* return if this is a bufferless transfer e.g.
 	 * codec <--> BT codec or GSM modem -- lg FIXME */
@@ -157,7 +167,7 @@ static int dma_hw_params(struct snd_pcm_substream *substream,
 		/* prepare DMA */
 		prtd->params = dma;
 
-		pr_debug("params %p, client %p, channel %d\n", prtd->params,
+		dprintk("params %p, client %p, channel %d\n", prtd->params,
 				prtd->params->client, prtd->params->channel);
 
 		ret = s3c2410_dma_request(prtd->params->channel,
@@ -189,7 +199,7 @@ static int dma_hw_params(struct snd_pcm_substream *substream,
 	prtd->dma_pos = prtd->dma_start;
 	prtd->dma_end = prtd->dma_start + totbytes;
 
-	pr_debug("DmaAddr=@%x Total=%lubytes PrdSz=%u #Prds=%u dma_area=0x%x\n",
+	dprintk("DmaAddr=@%x Total=%lubytes PrdSz=%u #Prds=%u dma_area=0x%x\n",
 			prtd->dma_start, totbytes, params_period_bytes(params),
 			params_periods(params), (unsigned int)runtime->dma_area);
 
@@ -202,7 +212,7 @@ static int dma_hw_free(struct snd_pcm_substream *substream)
 {
 	struct runtime_data *prtd = substream->runtime->private_data;
 
-	pr_debug("Entered %s\n", __func__);
+	dprintk("Entered %s\n", __func__);
 
 	/* TODO - do we need to ensure DMA flushed */
 	snd_pcm_set_runtime_buffer(substream, NULL);
@@ -220,7 +230,7 @@ static int dma_prepare(struct snd_pcm_substream *substream)
 	struct runtime_data *prtd = substream->runtime->private_data;
 	int ret = 0;
 
-	pr_debug("Entered %s\n", __func__);
+	dprintk("Entered %s\n", __func__);
 
 	/* return if this is a bufferless transfer e.g.
 	 * codec <--> BT codec or GSM modem -- lg FIXME */
@@ -257,7 +267,7 @@ static int dma_trigger(struct snd_pcm_substream *substream, int cmd)
 	struct runtime_data *prtd = substream->runtime->private_data;
 	int ret = 0;
 
-	pr_debug("Entered %s\n", __func__);
+	dprintk("Entered %s\n", __func__);
 
 	spin_lock(&prtd->lock);
 
@@ -293,7 +303,7 @@ static snd_pcm_uframes_t dma_pointer(struct snd_pcm_substream *substream)
 	unsigned long res;
 	dma_addr_t src, dst;
 
-	pr_debug("Entered %s\n", __func__);
+	dprintk("Entered %s\n", __func__);
 
 	spin_lock(&prtd->lock);
 	s3c2410_dma_getposition(prtd->params->channel, &src, &dst);
@@ -305,7 +315,7 @@ static snd_pcm_uframes_t dma_pointer(struct snd_pcm_substream *substream)
 
 	spin_unlock(&prtd->lock);
 
-	pr_debug("Pointer %x %x\n", src, dst);
+	dprintk("Pointer %x %x\n", src, dst);
 
 	/* we seem to be getting the odd error from the pcm library due
 	 * to out-of-bounds pointers. this is maybe due to the dma engine
@@ -326,7 +336,7 @@ static int dma_open(struct snd_pcm_substream *substream)
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct runtime_data *prtd;
 
-	pr_debug("Entered %s\n", __func__);
+	dprintk("Entered %s\n", __func__);
 
 	snd_pcm_hw_constraint_integer(runtime, SNDRV_PCM_HW_PARAM_PERIODS);
 	snd_soc_set_runtime_hwparams(substream, &dma_hardware);
@@ -346,10 +356,10 @@ static int dma_close(struct snd_pcm_substream *substream)
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct runtime_data *prtd = runtime->private_data;
 
-	pr_debug("Entered %s\n", __func__);
+	dprintk("Entered %s\n", __func__);
 
 	if (!prtd)
-		pr_debug("dma_close called with prtd == NULL\n");
+		dprintk("dma_close called with prtd == NULL\n");
 
 	kfree(prtd);
 
@@ -361,7 +371,7 @@ static int dma_mmap(struct snd_pcm_substream *substream,
 {
 	struct snd_pcm_runtime *runtime = substream->runtime;
 
-	pr_debug("Entered %s\n", __func__);
+	dprintk("Entered %s\n", __func__);
 
 	return dma_mmap_writecombine(substream->pcm->card->dev, vma,
 			runtime->dma_area,
@@ -387,7 +397,7 @@ static int preallocate_dma_buffer(struct snd_pcm *pcm, int stream)
 	struct snd_dma_buffer *buf = &substream->dma_buffer;
 	size_t size = dma_hardware.buffer_bytes_max;
 
-	pr_debug("Entered %s\n", __func__);
+	dprintk("Entered %s\n", __func__);
 
 	buf->dev.type = SNDRV_DMA_TYPE_DEV;
 	buf->dev.dev = pcm->card->dev;
@@ -407,7 +417,7 @@ static void dma_free_dma_buffers(struct snd_pcm *pcm)
 	struct snd_dma_buffer *buf;
 	int stream;
 
-	pr_debug("Entered %s\n", __func__);
+	dprintk("Entered %s\n", __func__);
 
 #ifdef CONFIG_S5P_INTERNAL_DMA
 	for (stream = 1; stream < 2; stream++) {
@@ -434,7 +444,7 @@ static int dma_new(struct snd_card *card,
 {
 	int ret = 0;
 
-	pr_debug("Entered %s\n", __func__);
+	dprintk("Entered %s\n", __func__);
 
 	if (!card->dev->dma_mask)
 		card->dev->dma_mask = &dma_mask;
@@ -465,9 +475,10 @@ struct snd_soc_platform_driver samsung_asoc_platform = {
 };
 EXPORT_SYMBOL_GPL(samsung_asoc_platform);
 
-#ifndef CONFIG_S5P_INTERNAL_DMA
+//#ifndef CONFIG_S5P_INTERNAL_DMA
 static int __devinit samsung_asoc_platform_probe(struct platform_device *pdev)
 {
+	dprintk("Entered %s\n", __func__);
 	return snd_soc_register_platform(&pdev->dev, &samsung_asoc_platform);
 }
 
@@ -487,9 +498,30 @@ static struct platform_driver asoc_dma_driver = {
 	.remove = __devexit_p(samsung_asoc_platform_remove),
 };
 
+static void asoc_dma_device_release(struct device *dev)
+{
+
+}
+
+static struct platform_device asoc_dma_device = {
+    .name         = "samsung-audio",
+    .id       = -1,
+    .dev = { 
+    	.release = asoc_dma_device_release, 
+	},
+};
+
 static int __init samsung_asoc_init(void)
 {
-	return platform_driver_register(&asoc_dma_driver);
+    int ret;
+    
+    //ret = platform_device_register(&asoc_dma_device);   
+    //dprintk("asoc_dma_device registered ! ret = %d\n", ret);
+    
+	ret = platform_driver_register(&asoc_dma_driver);
+    dprintk("asoc_dma_driver registered !ret = %d\n", ret);
+
+    return ret;
 }
 
 static void __exit samsung_asoc_exit(void)
@@ -499,10 +531,10 @@ static void __exit samsung_asoc_exit(void)
 
 module_init(samsung_asoc_init);
 module_exit(samsung_asoc_exit);
-#endif
+//#endif
 
-MODULE_AUTHOR("Ben Dooks, <ben@simtec.co.uk>");
-MODULE_DESCRIPTION("Samsung ASoC DMA Driver");
+//MODULE_AUTHOR("Ben Dooks, <ben@simtec.co.uk>");
+//MODULE_DESCRIPTION("Samsung ASoC DMA Driver");
 MODULE_LICENSE("GPL");
-MODULE_ALIAS("platform:samsung-audio");
+//MODULE_ALIAS("platform:samsung-audio");
 

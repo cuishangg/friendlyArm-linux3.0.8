@@ -35,6 +35,15 @@
 #include "dma.h"
 #include "s5pc1xx-i2s.h"
 
+#define DEBUG
+    
+#ifdef	DEBUG
+#define	dprintk( argc, argv... )		printk( argc, ##argv )
+#else
+#define	dprintk( argc, argv... )		
+#endif
+
+
 /*
  * The value should be set to maximum of the total number
  * of I2Sv3 controllers that any supported SoC has.
@@ -98,7 +107,7 @@ void s5p_i2s_set_clk_enabled(struct snd_soc_dai *dai, bool state)
 {
 	struct s3c_i2sv2_info *i2s = to_info(dai);
 
-	pr_debug("..entering %s\n", __func__);
+	dprintk("..entering %s\n", __func__);
 
 	if (state) {
 		if (audio_clk_gated == 1)
@@ -131,7 +140,7 @@ static int s3c2412_i2s_hw_params(struct snd_pcm_substream *substream,
 	struct s3c_i2sv2_info *i2s = to_info(dai);
 	u32 iismod;
 
-	pr_debug("Entered %s\n", __func__);
+	dprintk("Entered %s\n", __func__);
 
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
@@ -143,7 +152,7 @@ static int s3c2412_i2s_hw_params(struct snd_pcm_substream *substream,
 
 	/* Working copies of register */
 	iismod = readl(i2s->regs + S3C2412_IISMOD);
-	pr_debug("%s: r: IISMOD: %x\n", __func__, iismod);
+	dprintk("%s: r: IISMOD: %x\n", __func__, iismod);
 
 	switch (params_channels(params)) {
 	case 1:
@@ -191,7 +200,7 @@ static int s3c2412_i2s_hw_params(struct snd_pcm_substream *substream,
 #endif
 
 	writel(iismod, i2s->regs + S3C2412_IISMOD);
-	pr_debug("%s: w: IISMOD: %x\n", __func__, iismod);
+	dprintk("%s: w: IISMOD: %x\n", __func__, iismod);
 	return 0;
 }
 
@@ -211,7 +220,7 @@ static int s5p_i2s_wr_hw_params(struct snd_pcm_substream *substream,
 	return 0;
 }
 
-//#define S3C2412_I2S_DEBUG_CON 1
+#define S3C2412_I2S_DEBUG_CON 1
 
 #if S3C2412_I2S_DEBUG_CON
 #define bit_set(v, b) (((v) & (b)) ? 1 : 0)
@@ -247,13 +256,13 @@ static void s3c2412_snd_txctrl(struct s3c_i2sv2_info *i2s, int on)
 	void __iomem *regs = i2s->regs;
 	u32 fic, con, mod;
 
-	pr_debug("%s(%d)\n", __func__, on);
+	dprintk("%s(%d)\n", __func__, on);
 
 	fic = readl(regs + S3C2412_IISFIC);
 	con = readl(regs + S3C2412_IISCON);
 	mod = readl(regs + S3C2412_IISMOD);
 
-	pr_debug("%s: IIS: CON=%x MOD=%x FIC=%x\n", __func__, con, mod, fic);
+	dprintk("%s: IIS: CON=%x MOD=%x FIC=%x\n", __func__, con, mod, fic);
 
 	if (on) {
 		con |= S3C2412_IISCON_TXDMA_ACTIVE | S3C2412_IISCON_IIS_ACTIVE;
@@ -316,7 +325,7 @@ static void s3c2412_snd_txctrl(struct s3c_i2sv2_info *i2s, int on)
 
 	fic = readl(regs + S3C2412_IISFIC);
 	dbg_showcon(__func__, con);
-	pr_debug("%s: IIS: CON=%x MOD=%x FIC=%x\n", __func__, con, mod, fic);
+	dprintk("%s: IIS: CON=%x MOD=%x FIC=%x\n", __func__, con, mod, fic);
 }
 
 #define msecs_to_loops(t) (loops_per_jiffy / 1000 * HZ * t)
@@ -326,13 +335,13 @@ static void s3c2412_snd_rxctrl(struct s3c_i2sv2_info *i2s, int on)
 	void __iomem *regs = i2s->regs;
 	u32 fic, con, mod;
 
-	pr_debug("%s(%d)\n", __func__, on);
+	dprintk("%s(%d)\n", __func__, on);
 
 	fic = readl(regs + S3C2412_IISFIC);
 	con = readl(regs + S3C2412_IISCON);
 	mod = readl(regs + S3C2412_IISMOD);
 
-	pr_debug("%s: IIS: CON=%x MOD=%x FIC=%x\n", __func__, con, mod, fic);
+	dprintk("%s: IIS: CON=%x MOD=%x FIC=%x\n", __func__, con, mod, fic);
 
 	if (on) {
 		con |= S3C2412_IISCON_RXDMA_ACTIVE | S3C2412_IISCON_IIS_ACTIVE;
@@ -385,7 +394,7 @@ static void s3c2412_snd_rxctrl(struct s3c_i2sv2_info *i2s, int on)
 	}
 
 	fic = readl(regs + S3C2412_IISFIC);
-	pr_debug("%s: IIS: CON=%x MOD=%x FIC=%x\n", __func__, con, mod, fic);
+	dprintk("%s: IIS: CON=%x MOD=%x FIC=%x\n", __func__, con, mod, fic);
 }
 
 /*
@@ -397,7 +406,7 @@ static int s3c2412_snd_lrsync(struct s3c_i2sv2_info *i2s)
 	u32 iiscon;
 	unsigned long loops = msecs_to_loops(5);
 
-	pr_debug("Entered %s\n", __func__);
+	dprintk("Entered %s\n", __func__);
 
 	while (--loops) {
 		iiscon = readl(i2s->regs + S3C2412_IISCON);
@@ -423,7 +432,7 @@ static int s3c2412_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
 	unsigned long irqs;
 	int ret = 0;
 
-	pr_debug("Entered %s\n", __func__);
+	dprintk("Entered %s\n", __func__);
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
@@ -490,10 +499,10 @@ static int s5p_i2s_set_fmt(struct snd_soc_dai *cpu_dai,
 	struct s3c_i2sv2_info *i2s = to_info(cpu_dai);
 	u32 iismod;
 
-	pr_debug("Entered %s\n", __func__);
+	dprintk("Entered %s\n", __func__);
 
 	iismod = readl(i2s->regs + S3C2412_IISMOD);
-	pr_debug("hw_params r: IISMOD: %x\n", iismod);
+	dprintk("hw_params r: IISMOD: %x\n", iismod);
 
 #if defined(CONFIG_PLAT_S3C64XX) || defined(CONFIG_PLAT_S5P)
 	/* From Rev1.1 datasheet, we have two master and two slave modes:
@@ -545,7 +554,7 @@ static int s5p_i2s_set_fmt(struct snd_soc_dai *cpu_dai,
 	}
 
 	writel(iismod, i2s->regs + S3C2412_IISMOD);
-	pr_debug("hw_params w: IISMOD: %x\n", iismod);
+	dprintk("hw_params w: IISMOD: %x\n", iismod);
 	return 0;
 }
 
@@ -555,7 +564,7 @@ static int s5p_i2s_set_clkdiv(struct snd_soc_dai *cpu_dai,
 	struct s3c_i2sv2_info *i2s = to_info(cpu_dai);
 	u32 reg;
 
-	pr_debug("%s(%p, %d, %d)\n", __func__, cpu_dai, div_id, div);
+	dprintk("%s(%p, %d, %d)\n", __func__, cpu_dai, div_id, div);
 
 	switch (div_id) {
 	case S3C_I2SV2_DIV_BCLK:
@@ -582,7 +591,7 @@ static int s5p_i2s_set_clkdiv(struct snd_soc_dai *cpu_dai,
 		reg = readl(i2s->regs + S3C2412_IISMOD);
 		reg &= ~S3C2412_IISMOD_BCLK_MASK;
 		writel(reg | div, i2s->regs + S3C2412_IISMOD);
-		pr_debug("%s: MOD=%08x\n", __func__,
+		dprintk("%s: MOD=%08x\n", __func__,
 				readl(i2s->regs + S3C2412_IISMOD));
 		break;
 
@@ -611,7 +620,7 @@ static int s5p_i2s_set_clkdiv(struct snd_soc_dai *cpu_dai,
 		reg = readl(i2s->regs + S3C2412_IISMOD);
 		reg &= ~S3C2412_IISMOD_RCLK_MASK;
 		writel(reg | div, i2s->regs + S3C2412_IISMOD);
-		pr_debug("%s: MOD=%08x\n", __func__,
+		dprintk("%s: MOD=%08x\n", __func__,
 				readl(i2s->regs + S3C2412_IISMOD));
 		break;
 
@@ -621,7 +630,7 @@ static int s5p_i2s_set_clkdiv(struct snd_soc_dai *cpu_dai,
 					i2s->regs + S3C2412_IISPSR);
 		else
 			writel(0x0, i2s->regs + S3C2412_IISPSR);
-			pr_debug("%s: PSR=%08x\n", __func__,
+			dprintk("%s: PSR=%08x\n", __func__,
 				readl(i2s->regs + S3C2412_IISPSR));
 			break;
 
@@ -749,16 +758,16 @@ static int s5p_i2s_wr_startup(struct snd_pcm_substream *substream,
 			writel(i2s->suspend_iispsr, i2s->regs + S3C2412_IISPSR);
 			writel(i2s->suspend_iisahb, i2s->regs + S5P_IISAHB);
 			reg_saved_ok = false;
-			pr_debug("I2S Audio Clock enabled and \
+			dprintk("I2S Audio Clock enabled and \
 					Registers restored...\n");
 		}
 	}
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
-		pr_debug("Inside..%s..for playback stream\n" , __func__);
+		dprintk("Inside..%s..for playback stream\n" , __func__);
 		tx_clk_enabled = 1;
 	} else {
-		pr_debug("Inside..%s..for capture stream\n" , __func__);
+		dprintk("Inside..%s..for capture stream\n" , __func__);
 		rx_clk_enabled = 1;
 		iiscon = readl(i2s->regs + S3C2412_IISCON);
 		if (iiscon & S3C2412_IISCON_RXDMA_ACTIVE)
@@ -791,12 +800,12 @@ static void s5p_i2s_wr_shutdown(struct snd_pcm_substream *substream,
 	struct s3c_i2sv2_info *i2s = to_info(dai);
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
-		pr_debug("Inside %s for playback stream\n" , __func__);
+		dprintk("Inside %s for playback stream\n" , __func__);
 		tx_clk_enabled = 0;
 	} else {
-		pr_debug("Inside..%s..for capture stream\n" , __func__);
+		dprintk("Inside..%s..for capture stream\n" , __func__);
 		if (readl(i2s->regs + S3C2412_IISCON) & (1<<26)) {
-			pr_debug("\n rx overflow int in %s\n" , __func__);
+			dprintk("\n rx overflow int in %s\n" , __func__);
 			/* clear rxfifo overflow interrupt */
 			writel(readl(i2s->regs + S3C2412_IISCON) | (1<<26),
 					i2s->regs + S3C2412_IISCON);
@@ -820,8 +829,8 @@ static void s5p_i2s_wr_shutdown(struct snd_pcm_substream *substream,
 		}
 		reg_saved_ok = true;
 		s5p_i2s_set_clk_enabled(dai, 0);
-		pr_debug("I2S Audio Clock disabled and Registers stored...\n");
-		pr_debug("Inside %s CLkGATE_IP3=0x%x..\n",
+		dprintk("I2S Audio Clock disabled and Registers stored...\n");
+		dprintk("Inside %s CLkGATE_IP3=0x%x..\n",
 				__func__ , __raw_readl(S5P_CLKGATE_IP3));
 	}
 
@@ -937,6 +946,9 @@ static __devinit int s3c64xx_iis_dev_probe(struct platform_device *pdev)
 	unsigned long base;
 	unsigned int  iismod;
 	int ret = 0;
+    
+	dprintk("Entered %s\n", __func__);
+
 	if (pdev->id >= MAX_I2SV3) {
 		dev_err(&pdev->dev, "id %d out of range\n", pdev->id);
 		return -EINVAL;
@@ -1132,9 +1144,30 @@ static struct platform_driver s3c64xx_iis_driver = {
 	},
 };
 
+static void s3c64xx_iis_device_release(struct device *dev)
+{
+
+}
+
+static struct platform_device s3c64xx_iis_device = {
+    .name         = "samsung-audio",
+    .id       = -1,
+    .dev = { 
+    	.release = s3c64xx_iis_device_release, 
+	},
+};
+
 static int __init s3c64xx_i2s_init(void)
 {
-	return platform_driver_register(&s3c64xx_iis_driver);
+    int ret;
+
+    //ret = platform_device_register(&s3c64xx_iis_device);
+    //dprintk("s3c64xx_iis_device registered ! ret = %d\n", ret);
+    
+	ret = platform_driver_register(&s3c64xx_iis_driver);
+    dprintk("s3c64xx_iis_driver registered ! ret = %d\n", ret);
+
+    return ret;
 }
 module_init(s3c64xx_i2s_init);
 
@@ -1145,6 +1178,6 @@ static void __exit s3c64xx_i2s_exit(void)
 module_exit(s3c64xx_i2s_exit);
 
 /* Module information */
-MODULE_AUTHOR("Ben Dooks, <ben@simtec.co.uk>");
-MODULE_DESCRIPTION("S5PC1XX I2S SoC Interface");
+//MODULE_AUTHOR("Ben Dooks, <ben@simtec.co.uk>");
+//MODULE_DESCRIPTION("S5PC1XX I2S SoC Interface");
 MODULE_LICENSE("GPL");

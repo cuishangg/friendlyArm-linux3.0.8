@@ -14,6 +14,8 @@
 #include "s5pc1xx-i2s.h"
 #include "wm8960.h"
 
+#define DEBUG
+
 #ifdef	DEBUG
 #define	dprintk( argc, argv... )		printk( argc, ##argv )
 #else
@@ -239,7 +241,7 @@ static int __init mini210_audio_init(void)
 {
 	int ret;
 	
-	dprintk("+%s()\n", __FUNCTION__ );
+	dprintk("Entered +%s()\n", __FUNCTION__ ); 
 
 	mini210_snd_device = platform_device_alloc("soc-audio", -1);
 	if ( !mini210_snd_device ){
@@ -271,8 +273,8 @@ static void __exit mini210_audio_exit(void)
 module_init( mini210_audio_init );
 module_exit( mini210_audio_exit );
 
-MODULE_AUTHOR("zoulz, happyzlz@sohu.com");
-MODULE_DESCRIPTION("ALSA SoC TINY210v2+WM8960");
+//MODULE_AUTHOR("zoulz, happyzlz@sohu.com");
+//MODULE_DESCRIPTION("ALSA SoC TINY210v2+WM8960");
 MODULE_LICENSE("GPL");
 
 

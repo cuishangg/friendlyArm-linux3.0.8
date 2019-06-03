@@ -1506,7 +1506,7 @@ static void __init mini210_dm9000_init(void)
 }
 #endif
 
-#ifdef CONFIG_SND_SOC_WM8960_MINI210
+#ifdef CONFIG_SND_MINI210_WM8960
 #include <sound/wm8960.h>
 static struct wm8960_data wm8960_pdata = {
 	.capless		= 0,
@@ -1529,7 +1529,7 @@ static struct i2c_board_info mini210_i2c_devs0[] __initdata = {
 #ifdef CONFIG_SND_SOC_WM8580
 	{	I2C_BOARD_INFO("wm8580", 0x1b), },
 #endif
-#ifdef CONFIG_SND_SOC_WM8960_MINI210
+#ifdef CONFIG_SND_MINI210_WM8960
 	{
 		I2C_BOARD_INFO("wm8960", 0x1a),
 		.platform_data = &wm8960_pdata,

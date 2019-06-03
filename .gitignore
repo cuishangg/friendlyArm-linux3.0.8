@@ -32,6 +32,16 @@ modules.builtin
 *.patch
 *.gcno
 
+arch/arm/boot/Image
+arch/arm/boot/compressed/piggy.gzip
+arch/arm/boot/compressed/vmlinux
+arch/arm/boot/zImage
+include/config/auto.conf
+include/config/kernel.release
+include/config/tristate.conf
+include/generated/autoconf.h
+include/generated/utsrelease.h
+
 #
 # Top-level generic files
 #

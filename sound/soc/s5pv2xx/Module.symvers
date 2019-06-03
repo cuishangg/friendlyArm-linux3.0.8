@@ -1,2 +1,2 @@
-0x00000000	samsung_asoc_platform	vmlinux	(unknown)
-0x00000000	s3c64xx_i2s_get_clock	vmlinux	(unknown)
+0x00000000	samsung_asoc_platform	/home/cuishang/as/work/friendlyArm-linux3.0.8/sound/soc/s5pv2xx/dma	(unknown)
+0x00000000	s3c64xx_i2s_get_clock	/home/cuishang/as/work/friendlyArm-linux3.0.8/sound/soc/s5pv2xx/s5pc1xx-i2s	(unknown)
