@@ -63,6 +63,23 @@
  * using 2 wire for device control, so we cache them instead.
  */
 static const u16 wm8960_reg[WM8960_CACHEREGNUM] = {
+#if 1
+    0x0017, 0x0017, 0x0000, 0x0000,
+    0x0000, 0x0000, 0x0000, 0x0002,
+    0x01c0, 0x0040, 0x00ff, 0x00ff,
+    0x0000, 0x0000, 0x0000, 0x0000,
+    0x0000, 0x007b, 0x0100, 0x0032,
+    0x0000, 0x00d1, 0x00d1, 0x01c0,
+    0x0000, 0x0000, 0x0000, 0x0000,
+    0x0000, 0x0000, 0x0000, 0x0000,
+    0x0100, 0x0130, 0x0050, 0x0050,
+    0x0050, 0x0050, 0x0000, 0x0000,
+    0x0079, 0x0079, 0x0040, 0x0000,
+    0x0000, 0x0050, 0x0050, 0x0000,
+    0x0002, 0x0037, 0x004d, 0x0080,
+    0x0008, 0x0031, 0x0026, 0x00e9,
+
+#else
 	0x0097, 0x0097, 0x0000, 0x0000,
 	0x0000, 0x0008, 0x0000, 0x000a,
 	0x01c0, 0x0000, 0x00ff, 0x00ff,
@@ -77,6 +94,7 @@ static const u16 wm8960_reg[WM8960_CACHEREGNUM] = {
 	0x0000, 0x0050, 0x0050, 0x0000,
 	0x0002, 0x0037, 0x004d, 0x0080,
 	0x0008, 0x0031, 0x0026, 0x00e9,
+#endif
 };
 
 struct wm8960_priv {
@@ -983,7 +1001,7 @@ static int wm8960_probe(struct snd_soc_codec *codec)
 	struct wm8960_priv *wm8960 = snd_soc_codec_get_drvdata(codec);
 	struct wm8960_data *pdata = dev_get_platdata(codec->dev);
 	int ret;
-	u16 reg;
+	//u16 reg;
 
 	dprintk("+%s()\n", __FUNCTION__ );
 
@@ -1016,6 +1034,7 @@ static int wm8960_probe(struct snd_soc_codec *codec)
 
 	wm8960->set_bias_level(codec, SND_SOC_BIAS_STANDBY);
 
+#if 0
 	/* Latch the update bits */
 	reg = snd_soc_read(codec, WM8960_LINVOL);
 	snd_soc_write(codec, WM8960_LINVOL, reg | 0x100);
@@ -1040,7 +1059,38 @@ static int wm8960_probe(struct snd_soc_codec *codec)
 
 	snd_soc_write(codec, WM8960_IFACE2, 0x40);
 	//snd_soc_write(codec, WM8960_IFACE2, 0x28);
-	
+#else
+    /* Latch the update bits */  
+    snd_soc_update_bits(codec, WM8960_LINVOL, 0x100, 0x100);  
+    snd_soc_update_bits(codec, WM8960_RINVOL, 0x100, 0x100);  
+    snd_soc_update_bits(codec, WM8960_LADC, 0x100, 0x100);  
+    snd_soc_update_bits(codec, WM8960_RADC, 0x100, 0x100);  
+    snd_soc_update_bits(codec, WM8960_LDAC, 0x100, 0x100);  
+    snd_soc_update_bits(codec, WM8960_RDAC, 0x100, 0x100);  
+    snd_soc_update_bits(codec, WM8960_LOUT1, 0x100, 0x100);  
+    snd_soc_update_bits(codec, WM8960_ROUT1, 0x100, 0x100);  
+    snd_soc_update_bits(codec, WM8960_LOUT2, 0x100, 0x100);  
+    snd_soc_update_bits(codec, WM8960_ROUT2, 0x100, 0x100); 
+
+    /* other configuration */  
+    snd_soc_update_bits(codec, WM8960_POWER1, 0x1ea, 0x1ea);  
+    snd_soc_update_bits(codec, WM8960_POWER2, 0x1f8, 0x1f8);  
+    snd_soc_update_bits(codec, WM8960_POWER3, 0xcc, 0xcc);  
+    snd_soc_update_bits(codec, WM8960_LOUTMIX, 0x100, 0x100);  
+    snd_soc_update_bits(codec, WM8960_ROUTMIX, 0x100, 0x100);  
+    snd_soc_update_bits(codec, WM8960_POWER3, 0xc, 0xc);  
+    snd_soc_update_bits(codec, WM8960_LOUT1, 0x7f, 0x7f);  
+    snd_soc_update_bits(codec, WM8960_ROUT1, 0x7f, 0x7f);  
+    snd_soc_update_bits(codec, WM8960_IFACE2, 0x40, 0x40);  
+    snd_soc_update_bits(codec, WM8960_MONOMIX2, 0x120, 0x120);  
+    snd_soc_update_bits(codec, WM8960_LINPATH, 0x1f8, 0x138);  
+    snd_soc_update_bits(codec, WM8960_LINVOL, 0x19f, 0x11f);  
+    snd_soc_update_bits(codec, WM8960_RINVOL, 0x19f, 0x11f);  
+    snd_soc_update_bits(codec, WM8960_LOUT2, 0x1ff, 0x1ff);  
+    snd_soc_update_bits(codec, WM8960_ROUT2, 0x1ff, 0x1ff);  
+    snd_soc_update_bits(codec, WM8960_CLASSD3, 0x1a, 0x12);  
+    snd_soc_update_bits(codec, WM8960_CLASSD1, 0xc0, 0xc0);  
+#endif
 	snd_soc_add_controls(codec, wm8960_snd_controls, ARRAY_SIZE(wm8960_snd_controls));
 
 	wm8960_add_widgets(codec);

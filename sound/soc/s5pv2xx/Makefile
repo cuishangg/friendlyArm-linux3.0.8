@@ -2,7 +2,7 @@
 MAKE_MODE = yes
 
 ifeq ($(MAKE_MODE),yes)
-KERN_DIR = /home/cuishang/as/work/friendlyArm-linux3.0.8
+KERN_DIR = /home/cs/aosp/friendlyArm/github-friendlyArm-linux3.0.8
 
 all:
 	make -C $(KERN_DIR) M=`pwd` modules 
