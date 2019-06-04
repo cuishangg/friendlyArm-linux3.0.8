@@ -221,9 +221,9 @@ static int mini210_wm8960_init(struct snd_soc_pcm_runtime *rtd)
 static struct snd_soc_dai_link mini210_dai = {
 	.name = "MINI210",
 	.stream_name = "WM8960 HiFi",
-	.codec_name = "wm8960-codec",
+	.codec_name = "wm8960-codec.0-001a",
 	.platform_name = "samsung-audio",
-	.cpu_dai_name = "samsung-i2s",
+	.cpu_dai_name = "samsung-i2s.0",
 	.codec_dai_name = "wm8960-hifi",
 	.init = mini210_wm8960_init,
 	.ops = &mini210_wm8960_ops,

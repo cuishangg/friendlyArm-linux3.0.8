@@ -507,7 +507,7 @@ static int soc_pcm_apply_symmetry(struct snd_pcm_substream *substream)
 		return 0;
 	}
 
-	dev_dbg(&rtd->dev, "Symmetry forces %dHz rate\n", rtd->rate);
+	dev_info(&rtd->dev, "Symmetry forces %dHz rate\n", rtd->rate);
 
 	ret = snd_pcm_hw_constraint_minmax(substream->runtime,
 					   SNDRV_PCM_HW_PARAM_RATE,
@@ -1127,7 +1127,7 @@ int snd_soc_suspend(struct device *dev)
 				codec->cache_sync = 1;
 				break;
 			default:
-				dev_dbg(codec->dev, "CODEC is on over suspend\n");
+				dev_info(codec->dev, "CODEC is on over suspend\n");
 				break;
 			}
 		}
@@ -1164,7 +1164,7 @@ static void soc_resume_deferred(struct work_struct *work)
 	 * so userspace apps are blocked from touching us
 	 */
 
-	dev_dbg(card->dev, "starting resume work\n");
+	dev_info(card->dev, "starting resume work\n");
 
 	/* Bring us up into D2 so that DAPM starts enabling things */
 	snd_power_change_state(card->snd_card, SNDRV_CTL_POWER_D2);
@@ -1196,7 +1196,7 @@ static void soc_resume_deferred(struct work_struct *work)
 				codec->suspended = 0;
 				break;
 			default:
-				dev_dbg(codec->dev, "CODEC was on over suspend\n");
+				dev_info(codec->dev, "CODEC was on over suspend\n");
 				break;
 			}
 		}
@@ -1247,7 +1247,7 @@ static void soc_resume_deferred(struct work_struct *work)
 	if (card->resume_post)
 		card->resume_post(card);
 
-	dev_dbg(card->dev, "resume work completed\n");
+	dev_info(card->dev, "resume work completed\n");
 
 	/* userspace can access us now we are back as we were before */
 	snd_power_change_state(card->snd_card, SNDRV_CTL_POWER_D0);
@@ -1269,10 +1269,10 @@ int snd_soc_resume(struct device *dev)
 		ac97_control |= cpu_dai->driver->ac97_control;
 	}
 	if (ac97_control) {
-		dev_dbg(dev, "Resuming AC97 immediately\n");
+		dev_info(dev, "Resuming AC97 immediately\n");
 		soc_resume_deferred(&card->deferred_resume_work);
 	} else {
-		dev_dbg(dev, "Scheduling resume work\n");
+		dev_info(dev, "Scheduling resume work\n");
 		if (!schedule_work(&card->deferred_resume_work))
 			dev_err(dev, "resume work item may be lost\n");
 	}
@@ -1299,7 +1299,7 @@ static int soc_bind_dai_link(struct snd_soc_card *card, int num)
 
 	if (rtd->complete)
 		return 1;
-	dev_dbg(card->dev, "binding %s at idx %d\n", dai_link->name, num);
+	dev_info(card->dev, "binding %s at idx %d\n", dai_link->name, num);
 
 	/* do we already have the CPU DAI for this link ? */
 	if (rtd->cpu_dai) {
@@ -1312,7 +1312,7 @@ static int soc_bind_dai_link(struct snd_soc_card *card, int num)
 			goto find_codec;
 		}
 	}
-	dev_dbg(card->dev, "CPU DAI %s not registered\n",
+	dev_info(card->dev, "CPU DAI %s not registered\n",
 			dai_link->cpu_dai_name);
 
 find_codec:
@@ -1334,13 +1334,13 @@ find_codec:
 					goto find_platform;
 				}
 			}
-			dev_dbg(card->dev, "CODEC DAI %s not registered\n",
+			dev_info(card->dev, "CODEC DAI %s not registered\n",
 					dai_link->codec_dai_name);
 
 			goto find_platform;
 		}
 	}
-	dev_dbg(card->dev, "CODEC %s not registered\n",
+	dev_info(card->dev, "CODEC %s not registered\n",
 			dai_link->codec_name);
 
 find_platform:
@@ -1361,7 +1361,7 @@ find_platform:
 		}
 	}
 
-	dev_dbg(card->dev, "platform %s not registered\n",
+	dev_info(card->dev, "platform %s not registered\n",
 			dai_link->platform_name);
 	return 0;
 
@@ -1607,7 +1607,7 @@ static int soc_probe_dai_link(struct snd_soc_card *card, int num)
 	struct snd_soc_dai *codec_dai = rtd->codec_dai, *cpu_dai = rtd->cpu_dai;
 	int ret;
 
-	dev_dbg(card->dev, "probe %s dai link %d\n", card->name, num);
+	printk(" probe %s dai link %d\n", card->name, num);
 
 	/* config components */
 	codec_dai->codec = codec;
@@ -1821,6 +1821,7 @@ static void snd_soc_instantiate_card(struct snd_soc_card *card)
 	enum snd_soc_compress_type compress_type;
 	int ret, i;
 
+    printk("Entered %s \n", __FUNCTION__);
 	mutex_lock(&card->mutex);
 
 	if (card->instantiated) {
@@ -1835,6 +1836,8 @@ static void snd_soc_instantiate_card(struct snd_soc_card *card)
 	/* bind completed ? */
 	if (card->num_rtd != card->num_links) {
 		mutex_unlock(&card->mutex);
+
+		printk("returned bind completed  false \n");
 		return;
 	}
 
@@ -1857,6 +1860,8 @@ static void snd_soc_instantiate_card(struct snd_soc_card *card)
 		ret = snd_soc_init_codec_cache(codec, compress_type);
 		if (ret < 0) {
 			mutex_unlock(&card->mutex);
+            
+            printk("snd_soc_init_codec_cache  false \n");
 			return;
 		}
 	}
@@ -1945,6 +1950,7 @@ static void snd_soc_instantiate_card(struct snd_soc_card *card)
 		}
 	}
 
+    printk("ready fo snd card register ! card->name = %s\n", card->name);
 	ret = snd_card_register(card->snd_card);
 	if (ret < 0) {
 		printk(KERN_ERR "asoc: failed to register soundcard for %s\n", card->name);
@@ -2010,7 +2016,7 @@ static int soc_probe(struct platform_device *pdev)
 
 	/* Bodge while we unpick instantiation */
 	card->dev = &pdev->dev;
-
+    printk("Entered + %s", __FUNCTION__);
 	ret = snd_soc_register_card(card);
 	if (ret != 0) {
 		dev_err(&pdev->dev, "Failed to register card\n");
@@ -2119,7 +2125,7 @@ static int soc_new_pcm(struct snd_soc_pcm_runtime *rtd, int num)
 	if (codec_dai->driver->capture.channels_min)
 		capture = 1;
 
-	dev_dbg(rtd->card->dev, "registered pcm #%d %s\n",num,new_name);
+	dev_info(rtd->card->dev, "registered pcm #%d %s\n",num,new_name);
 	ret = snd_pcm_new(rtd->card->snd_card, new_name,
 			num, playback, capture, &pcm);
 	if (ret < 0) {
@@ -2280,7 +2286,7 @@ unsigned int snd_soc_read(struct snd_soc_codec *codec, unsigned int reg)
 	unsigned int ret;
 
 	ret = codec->read(codec, reg);
-	dev_dbg(codec->dev, "read %x => %x\n", reg, ret);
+	dev_info(codec->dev, "read %x => %x\n", reg, ret);
 	trace_snd_soc_reg_read(codec, reg, ret);
 
 	return ret;
@@ -2290,7 +2296,8 @@ EXPORT_SYMBOL_GPL(snd_soc_read);
 unsigned int snd_soc_write(struct snd_soc_codec *codec,
 			   unsigned int reg, unsigned int val)
 {
-	dev_dbg(codec->dev, "write %x = %x\n", reg, val);
+	dev_info(codec->dev, "write reg = %d, 0x%x, val = %d, 0x%x\n", reg, reg, val, val);
+    
 	trace_snd_soc_reg_write(codec, reg, val);
 	return codec->write(codec, reg, val);
 }
@@ -3389,7 +3396,7 @@ int snd_soc_register_card(struct snd_soc_card *card)
 	snd_soc_instantiate_cards();
 	mutex_unlock(&client_mutex);
 
-	dev_dbg(card->dev, "Registered card '%s'\n", card->name);
+	dev_info(card->dev, "Registered card '%s'\n", card->name);
     printk(KERN_INFO "- %s Registered card '%s'\n ", __FUNCTION__, card->name);
 	return 0;
 }
@@ -3408,7 +3415,7 @@ int snd_soc_unregister_card(struct snd_soc_card *card)
 	mutex_lock(&client_mutex);
 	list_del(&card->list);
 	mutex_unlock(&client_mutex);
-	dev_dbg(card->dev, "Unregistered card '%s'\n", card->name);
+	dev_info(card->dev, "Unregistered card '%s'\n", card->name);
 
 	return 0;
 }
@@ -3483,7 +3490,7 @@ int snd_soc_register_dai(struct device *dev,
 {
 	struct snd_soc_dai *dai;
 
-	dev_dbg(dev, "dai register %s\n", dev_name(dev));
+	dev_info(dev, "cuishang dai register %s\n", dev_name(dev));
 
 	dai = kzalloc(sizeof(struct snd_soc_dai), GFP_KERNEL);
 	if (dai == NULL)
@@ -3550,7 +3557,7 @@ int snd_soc_register_dais(struct device *dev,
 	struct snd_soc_dai *dai;
 	int i, ret = 0;
 
-	dev_dbg(dev, "dai register %s #%Zu\n", dev_name(dev), count);
+	dev_info(dev, "dai register %s #%Zu\n", dev_name(dev), count);
 
 	for (i = 0; i < count; i++) {
 
@@ -3622,7 +3629,7 @@ int snd_soc_register_platform(struct device *dev,
 {
 	struct snd_soc_platform *platform;
 
-	dev_dbg(dev, "platform register %s\n", dev_name(dev));
+	dev_info(dev, "platform register %s\n", dev_name(dev));
 
 	platform = kzalloc(sizeof(struct snd_soc_platform), GFP_KERNEL);
 	if (platform == NULL)
@@ -3722,7 +3729,7 @@ int snd_soc_register_codec(struct device *dev,
 	struct snd_soc_codec *codec;
 	int ret, i;
 
-	dev_dbg(dev, "codec register %s\n", dev_name(dev));
+	dev_info(dev, "codec register %s\n", dev_name(dev));
 
 	codec = kzalloc(sizeof(struct snd_soc_codec), GFP_KERNEL);
 	if (codec == NULL)
@@ -3730,6 +3737,7 @@ int snd_soc_register_codec(struct device *dev,
 
 	/* create CODEC component name */
 	codec->name = fmt_single_name(dev, &codec->id);
+    dev_info(dev, "codec->name = %s \n", codec->name);
 	if (codec->name == NULL) {
 		kfree(codec);
 		return -ENOMEM;
