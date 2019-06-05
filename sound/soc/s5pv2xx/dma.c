@@ -131,9 +131,6 @@ static void audio_buffdone(struct s3c2410_dma_chan *channel,
 
 	prtd = substream->runtime->private_data;
 
-	if (substream)
-		snd_pcm_period_elapsed(substream);
-
 	spin_lock(&prtd->lock);
 	if (prtd->state & ST_RUNNING && !s3c_dma_has_circular()) {
 		prtd->dma_loaded--;
@@ -141,6 +138,10 @@ static void audio_buffdone(struct s3c2410_dma_chan *channel,
 	}
 
 	spin_unlock(&prtd->lock);
+
+	if (substream)
+		snd_pcm_period_elapsed(substream);
+
 }
 
 static int dma_hw_params(struct snd_pcm_substream *substream,
@@ -303,7 +304,7 @@ static snd_pcm_uframes_t dma_pointer(struct snd_pcm_substream *substream)
 	unsigned long res;
 	dma_addr_t src, dst;
 
-	//dprintk("Entered %s\n", __func__);
+	dprintk("Entered %s\n", __func__);
 
 	spin_lock(&prtd->lock);
 	s3c2410_dma_getposition(prtd->params->channel, &src, &dst);
@@ -315,7 +316,7 @@ static snd_pcm_uframes_t dma_pointer(struct snd_pcm_substream *substream)
 
 	spin_unlock(&prtd->lock);
 
-	//dprintk("Pointer %x %x\n", src, dst);
+	dprintk("Pointer %x %x\n", src, dst);
 
 	/* we seem to be getting the odd error from the pcm library due
 	 * to out-of-bounds pointers. this is maybe due to the dma engine
