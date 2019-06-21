@@ -3017,7 +3017,7 @@ hub_port_init (struct usb_hub *hub, struct usb_device *udev, int port1,
 	}
 	if (retval)
 		goto fail;
-
+    //bMaxPacketSize0 设备端点0传输包最大长度
 	if (udev->descriptor.bMaxPacketSize0 == 0xff ||
 			udev->speed == USB_SPEED_SUPER)
 		i = 512;
